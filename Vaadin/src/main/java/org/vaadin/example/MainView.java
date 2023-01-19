@@ -117,7 +117,7 @@ public class MainView extends VerticalLayout {
 
     private VerticalLayout SearchTab(@Autowired AnimeService service) throws Exception {
         VerticalLayout v = new VerticalLayout();
-        Grid<Anime> grid = new Grid<>();
+        Grid<Anime> grid = new Grid<>();    // Creamos la tabla con sus equivalencias
 
         grid.addColumn(Anime::getStudio).setHeader("Estudio");
         grid.addColumn(Anime::getGenres).setHeader("Géneros");
@@ -129,6 +129,8 @@ public class MainView extends VerticalLayout {
         TextField search = new TextField();
         search.setLabel("Buscar");
         search.setPlaceholder("Índice en tabla");
+        // ESte boton se encarga de mandar una petición a la API con el ID que recoge del TextField "Search",
+        // y lo que devuelva lo mete en el grid
         Button boton = new Button("Buscar", e -> {
             try {
                 grid.setItems(service.leeUnAnime(Integer.parseInt(search.getValue())));
@@ -136,12 +138,12 @@ public class MainView extends VerticalLayout {
                 throw new RuntimeException(ex);
             }
         });
-        v.add(search, boton, grid);
-        return v;
+        v.add(search, boton, grid); // Añadimos el TextField, el botón y el grid
+        return v;   // Retornamos el layout para luego igualarlo con el contenido global de la página
     }
 
     private VerticalLayout createDialogLayout(@Autowired AnimeService service, Dialog dialog) throws ParseException {
-
+        // CREACIÓN DE TODOS LOS ELEMENTOS PARA INTRODUCIR TEXTO
         TextField estudio = new TextField();
         estudio.setLabel("Estudio");
 
@@ -160,30 +162,30 @@ public class MainView extends VerticalLayout {
         DatePicker datePicker = new DatePicker();
         datePicker.setLabel("Fecha de estreno");
 
-
+        // Creamos el horizontal layout para meter los botones después
         HorizontalLayout h = new HorizontalLayout();
-        Button boton = new Button("Cerrar", e -> dialog.close());
+        Button boton = new Button("Cerrar", e -> dialog.close());   // Botón para cerrar el diálogo
 
         Button botonAniadir = new Button("Añadir", e -> {
             try {
-                Anime anime = new Anime();
-                anime.setDescription(descripcion.getValue());
+                Anime anime = new Anime();  // Objeto anime que se va a añadir
+                anime.setDescription(descripcion.getValue());   // Introducción de variables
                 anime.setHype(hype.getValue());
-                String[] generosS = generos.getValue().split(",");
+                String[] generosS = generos.getValue().replaceAll(" ", "").split(",");  // Separamos el string por comas para qie se vea más bonito
                 List<String> generosAlAnime = new ArrayList<>(Arrays.asList(generosS));
                 anime.setGenres(generosAlAnime);
                 anime.setStudio(estudio.getValue());
                 System.out.println(datePicker.getValue());
-                Date date = new SimpleDateFormat("yyyy-MM-dd").parse(datePicker.getValue().toString());
+                Date date = new SimpleDateFormat("yyyy-MM-dd").parse(datePicker.getValue().toString()); // Formateamos la fecha a cómo la traduce el datepicker
                 anime.setStart_date(date);
                 Titulo tituloC = new Titulo();
                 tituloC.setText(titulo.getValue());
                 tituloC.setLink("");
                 anime.setTitle(tituloC);
 
-                System.out.println(service.addAnime(anime));
+                System.out.println(service.addAnime(anime));    // llamamos al servicio, y de paso imprimimos el código para asegurarnos de que funciona
 
-                dialog.close();
+                dialog.close(); // Cerramos el diálogo
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
             }
