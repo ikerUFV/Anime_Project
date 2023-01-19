@@ -15,7 +15,7 @@ public class LectorJSONTest {
     }
 
     @Test
-    public void testLeerJson() {
+    public void testLeerJson() throws Exception{
         assertNotNull(lector.leerJson().get(0).getTitle());
     }
 }
