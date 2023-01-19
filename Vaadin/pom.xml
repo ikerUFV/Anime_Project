@@ -3,14 +3,14 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <!-- Vaadin project from https://github.com/vaadin/skeleton-starter-flow-spring -->
-    <groupId>com.example</groupId>
-    <artifactId>spring-skeleton</artifactId>
-    <name>Project base for Spring Boot and Vaadin Flow</name>
-    <version>1.0-SNAPSHOT</version>
+    <groupId>dis.anime.front</groupId>
+    <artifactId>anime_frontend</artifactId>
+    <name>Frontend anime con vaadin</name>
+    <version>1.0</version>
     <packaging>jar</packaging>
 
     <properties>
-        <java.version>1.8</java.version>
+        <java.version>11</java.version>
         <vaadin.version>14.9.4</vaadin.version>
     </properties>
 
@@ -107,6 +107,11 @@
                     <artifactId>vaadin-core</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.6.2</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
