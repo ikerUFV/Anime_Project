@@ -11,7 +11,7 @@ import java.net.http.HttpResponse;
 import java.util.List;
 
 public class API {
-    private static final String urlPrefix = "http://localhost:8080/%s/%s";
+    private static final String urlPrefix = "http://animeapi:8080/%s/%s";
 
     public String getAnime(int id) throws Exception{
         String url = String.format(urlPrefix, "animes", id);
