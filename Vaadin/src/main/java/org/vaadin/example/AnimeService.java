@@ -13,7 +13,10 @@ public class AnimeService implements Serializable {
     public List<Anime> leeAnime() throws Exception{
         API api = new API();
         Gson gson = new GsonBuilder().setDateFormat("MMM dd, yyyy").create();
-        List<Anime> lista = gson.fromJson(api.getAnimeList(), new TypeToken<List<Anime>>(){}.getType());
+
+        String listS = api.getAnimeList();
+        System.out.println(listS);
+        List<Anime> lista = gson.fromJson(listS, new TypeToken<List<Anime>>(){}.getType());
 
         return lista;
     }

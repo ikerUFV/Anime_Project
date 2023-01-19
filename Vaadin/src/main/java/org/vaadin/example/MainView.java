@@ -1,15 +1,26 @@
 package org.vaadin.example;
 
-import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dependency.CssImport;
-import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.tabs.Tab;
+import com.vaadin.flow.component.tabs.Tabs;
+import com.vaadin.flow.component.tabs.TabsVariant;
+import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.PWA;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * A sample Vaadin view class.
@@ -39,13 +50,151 @@ public class MainView extends VerticalLayout {
      *
      * @param service The message service. Automatically injected Spring managed bean.
      */
-    public MainView(@Autowired AnimeService service) {
+    public MainView(@Autowired AnimeService service) throws Exception {
 
-        // Use TextField for standard text input
-        TextField textField = new TextField("Your name");
-        textField.addThemeName("bordered");
+        Tab animeTab = new Tab("Animes");
+        Tab searchTab = new Tab("Buscar");
 
+        Tabs tabs = new Tabs(animeTab, searchTab);
+        tabs.addThemeVariants(TabsVariant.LUMO_EQUAL_WIDTH_TABS);
 
+        VerticalLayout contenido = new VerticalLayout();
+        contenido.add(AnimeTab(service));
+
+        tabs.addSelectedChangeListener(event -> {
+            try {
+                setContent(service, event.getSelectedTab(), animeTab, contenido);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+        VerticalLayout layoutPrincipal = new VerticalLayout();
+        layoutPrincipal.add(tabs, contenido);
+
+        add(layoutPrincipal);
     }
+
+    private void setContent(@Autowired AnimeService service, Tab selectedTab, Tab animeTab, VerticalLayout contenido) throws Exception {
+        if(selectedTab.equals(animeTab)){
+            contenido.removeAll();
+            contenido.add(AnimeTab(service));
+        }else{
+            contenido.removeAll();
+            contenido.add(SearchTab(service));
+        }
+    }
+
+    private VerticalLayout AnimeTab(@Autowired AnimeService service) throws Exception {
+        HorizontalLayout inputs = new HorizontalLayout();
+        VerticalLayout results = new VerticalLayout();
+
+        Grid<Anime> grid = new Grid<>();
+        List<Anime> lista = new ArrayList<>();
+
+        lista = service.leeAnime();
+
+        grid.addColumn(Anime::getStudio).setHeader("Estudio");
+        grid.addColumn(Anime::getGenres).setHeader("Géneros");
+        grid.addColumn(Anime::getHype).setHeader("Hype");
+        grid.addColumn(Anime::getDescription).setHeader("Descripción");
+        grid.addColumn(Anime::getTitle).setHeader("Título");
+        grid.addColumn(Anime::getStart_date).setHeader("Fecha de estreno");
+
+        grid.setItems(lista);
+        results.add(grid);
+
+        Dialog dialog = new Dialog();
+        dialog.setModal(true);
+        dialog.getElement().setAttribute("aria-label", "Añadir nuevo anime");
+        VerticalLayout dialogLayout = createDialogLayout(service, dialog);
+        dialog.add(dialogLayout);
+
+        Button aniadir = new Button("Añadir", e -> dialog.open());
+
+        VerticalLayout layoutFinal = new VerticalLayout(results, aniadir, dialog);
+        return layoutFinal;
+    }
+
+    private VerticalLayout SearchTab(@Autowired AnimeService service) throws Exception {
+        VerticalLayout v = new VerticalLayout();
+        Grid<Anime> grid = new Grid<>();
+
+        grid.addColumn(Anime::getStudio).setHeader("Estudio");
+        grid.addColumn(Anime::getGenres).setHeader("Géneros");
+        grid.addColumn(Anime::getHype).setHeader("Hype");
+        grid.addColumn(Anime::getDescription).setHeader("Descripción");
+        grid.addColumn(Anime::getTitle).setHeader("Título");
+        grid.addColumn(Anime::getStart_date).setHeader("Fecha de estreno");
+
+        TextField search = new TextField();
+        search.setLabel("Buscar");
+        search.setPlaceholder("Índice en tabla");
+        Button boton = new Button("Buscar", e -> {
+            try {
+                grid.setItems(service.leeUnAnime(Integer.parseInt(search.getValue())));
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+        v.add(search, boton, grid);
+        return v;
+    }
+
+    private VerticalLayout createDialogLayout(@Autowired AnimeService service, Dialog dialog) throws ParseException {
+
+        TextField estudio = new TextField();
+        estudio.setLabel("Estudio");
+
+        IntegerField hype = new IntegerField();
+        hype.setLabel("hype");
+
+        TextField descripcion = new TextField();
+        descripcion.setLabel("Descripción");
+
+        TextField titulo = new TextField();
+        titulo.setLabel("Título");
+
+        TextField generos = new TextField();
+        generos.setLabel("Géneros");
+
+        DatePicker datePicker = new DatePicker();
+        datePicker.setLabel("Fecha de estreno");
+
+
+        HorizontalLayout h = new HorizontalLayout();
+        Button boton = new Button("Cerrar", e -> dialog.close());
+
+        Button botonAniadir = new Button("Añadir", e -> {
+            try {
+                Anime anime = new Anime();
+                anime.setDescription(descripcion.getValue());
+                anime.setHype(hype.getValue());
+                String[] generosS = generos.getValue().split(",");
+                List<String> generosAlAnime = new ArrayList<>(Arrays.asList(generosS));
+                anime.setGenres(generosAlAnime);
+                anime.setStudio(estudio.getValue());
+                System.out.println(datePicker.getValue());
+                Date date = new SimpleDateFormat("yyyy-MM-dd").parse(datePicker.getValue().toString());
+                anime.setStart_date(date);
+                Titulo tituloC = new Titulo();
+                tituloC.setText(titulo.getValue());
+                tituloC.setLink("");
+                anime.setTitle(tituloC);
+
+                System.out.println(service.addAnime(anime));
+
+                dialog.close();
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+
+        h.add(boton, botonAniadir);
+        VerticalLayout v = new VerticalLayout();
+        v.add(estudio, hype, descripcion, titulo, generos, datePicker, h);
+
+        return v;
+    }
+
 
 }

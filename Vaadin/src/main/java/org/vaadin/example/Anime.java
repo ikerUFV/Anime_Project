@@ -43,8 +43,9 @@ public class Anime {
         this.description = description;
     }
 
-    public Titulo getTitle() {
-        return title;
+    public String getTitle() {
+
+        return title.text;
     }
 
     public void setTitle(Titulo title) {
